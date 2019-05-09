@@ -3,3 +3,6 @@
 name = "bitcoin-script-vm"
 version = "0.0.1"
 authors = [ "onokatio <onokatio@gmail.com>"]
+
+[dependencies]
+bimap = "0.3"
