@@ -64,6 +64,20 @@ impl VM {
             stack: vec![]
         }
     }
+    fn dump(self) {
+        println!("pc:{}", self.pc);
+        print!("stack: [");
+        for value in self.stack {
+            print!("{:#x}, ",value);
+        }
+        println!("]");
+
+        print!("code: [");
+        for code in self.code {
+            print!("{:#x}, ",code);
+        }
+        println!("]");
+    }
     fn run(&mut self) {
         while self.code.len() > self.pc {
             self.step();
@@ -102,10 +116,5 @@ fn main() {
     let mut vm = VM::new(bytecode);
     vm.run();
 
-    println!("pc:{}", vm.pc);
-    print!("stack: [");
-    for value in vm.stack {
-        print!("{}, ",value);
-    }
-    println!("]");
+    vm.dump();
 }
