@@ -1,29 +1,41 @@
-use std::io;
-use std::collections::HashMap;
+extern crate bimap;
 
-const OP_0:   i32 = 0x00;
-const OP_1:   i32 = 0x01;
-const OP_2:   i32 = 0x01;
-const OP_DUP: i32 = 0x76;
+//use std::io;
+use bimap::BiMap;
 
-fn string2bytecode(code: Vec<String>) {
-    let mut opcode: HashMap<&str, i32> = HashMap::new();
-    opcode.insert("OP_0",     0x00);
-    opcode.insert("OP_FALSE", 0);
-    opcode.insert("OP_1",     1);
-    opcode.insert("OP_TRUE",  1);
-    opcode.insert("OP_2",     2);
-
-    let mut bytecode: HashMap<&str, i32> = HashMap::new();
-    for key in opcode.keys() {
-        println!("{}",key);
-        match opcode.get(key) {
-            Some(value) => println!("{}",value),
-            _ => panic!("opcode map is invalid."),
-        }
-    }
+struct Compiler {
+    opcode_list: BiMap<&'static str, i32>,
 }
 
+impl Compiler {
+    fn new() {
+        let mut opcode_list: BiMap<&'static str, i32> = BiMap::new();
+        opcode_list.insert("OP_0",     0x00);
+        opcode_list.insert("OP_FALSE", 0x00);
+        opcode_list.insert("OP_1",     0x01);
+        opcode_list.insert("OP_TRUE",  0x01);
+        opcode_list.insert("OP_2",     0x02);
+        opcode_list.insert("OP_DUP",   0x76);
+
+        Compiler {
+            opcode_list: opcode_list,
+        };
+    }
+    fn compile(&self, codes:Vec<&str>) -> Vec<i32> {
+        let mut bytecode: Vec<i32> = vec![];
+
+        for code in codes {
+            let hex: i32 = match self.opcode_list.get_by_left(&code) {
+                Some(&value) => value,
+                None => panic!("opcode not implemented."),
+            };
+            bytecode.push(hex);
+        }
+
+        return bytecode;
+    }
+
+}
 struct VM {
     stack: Vec<i32>,
     code: Vec<i32>,
@@ -43,8 +55,8 @@ impl VM {
             println!("pc = {}",self.pc);
 
             match self.code[self.pc] {
-                OP_1 => self.op_1(),
-                OP_DUP => self.op_dup(),
+                //0x01 => self.op_1(),
+                //OP_DUP => self.op_dup(),
                 _ => panic!("The opcode is not implemented yet,"),
             }
         }
@@ -67,7 +79,7 @@ impl VM {
 }
 
 fn main() {
-    let mut vm = VM::new(vec![OP_1, OP_DUP]);
+    let mut vm = VM::new(vec![]);
     vm.run();
     println!("pc:{}", vm.pc);
 
@@ -81,5 +93,5 @@ fn main() {
     }
     println!("]");
 
-    string2bytecode(vec![]);
+    let compiler = Compiler::new();
 }
