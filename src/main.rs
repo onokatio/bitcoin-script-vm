@@ -66,12 +66,15 @@ impl VM {
     }
     fn run(&mut self) {
         while self.code.len() > self.pc {
-            match self.code[self.pc] {
-                0x01 => self.op_pushnumber(1),
-                0x02 => self.op_pushnumber(2),
-                0x76 => self.op_dup(),
-                _ => panic!("The opcode is not implemented yet,"),
-            }
+            self.step();
+        }
+    }
+    fn step(&mut self) {
+        match self.code[self.pc] {
+            0x01 => self.op_pushnumber(1),
+            0x02 => self.op_pushnumber(2),
+            0x76 => self.op_dup(),
+            _ => panic!("The opcode is not implemented yet,"),
         }
     }
     fn op_pushnumber(&mut self, num: i32){
