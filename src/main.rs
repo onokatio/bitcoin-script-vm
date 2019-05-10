@@ -56,14 +56,14 @@ impl Compiler {
 }
 struct VM {
     stack: Vec<i32>,
-    code: Vec<i32>,
+    codes: Vec<i32>,
     pc: usize,
 }
 
 impl VM {
-    fn new(code: Vec<i32>) -> VM {
+    fn new(codes: Vec<i32>) -> VM {
         VM {
-            code: code,
+            codes: codes,
             pc: 0,
             stack: vec![]
         }
@@ -76,26 +76,26 @@ impl VM {
         }
         println!("]");
 
-        print!("code: [");
-        for code in self.code {
+        print!("codes: [");
+        for code in self.codes {
             print!("{:#x}, ",code);
         }
         println!("]");
     }
     fn run(&mut self) {
-        while self.code.len() > self.pc {
+        while self.codes.len() > self.pc {
             self.step();
         }
     }
     fn step(&mut self) {
         let compiler = Compiler::new();
-        if      self.code[self.pc] == compiler.compile_single("OP_0")   { self.op_pushnumber(0); }
-        else if self.code[self.pc] == compiler.compile_single("OP_1")   { self.op_pushnumber(1); }
-        else if self.code[self.pc] == compiler.compile_single("OP_2")   { self.op_pushnumber(2); }
-        else if self.code[self.pc] == compiler.compile_single("OP_NOP") { self.op_nop(); }
-        else if self.code[self.pc] == compiler.compile_single("OP_DUP") { self.op_dup(); }
-        else if self.code[self.pc] == compiler.compile_single("OP_IF")  { self.op_if(); }
-        else { panic!("The opcode is not implemented yet,"); }
+        if      self.codes[self.pc] == compiler.compile_single("OP_0")   { self.op_pushnumber(0); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_1")   { self.op_pushnumber(1); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_2")   { self.op_pushnumber(2); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_NOP") { self.op_nop(); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_DUP") { self.op_dup(); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_IF")  { self.op_if(); }
+        else { panic!("[VM] The opcode is not implemented yet,"); }
     }
     fn op_pushnumber(&mut self, num: i32){
         self.stack.push(num);
