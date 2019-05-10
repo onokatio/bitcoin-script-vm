@@ -12,9 +12,14 @@ impl Compiler {
     fn new() -> Compiler {
         let mut opcode_list: BiMap<&'static str, i32> = BiMap::new();
         opcode_list.insert("OP_0",     0x00);
-        opcode_list.insert("OP_1",     0x01);
-        opcode_list.insert("OP_2",     0x02);
+        opcode_list.insert("OP_1",     0x51);
+        opcode_list.insert("OP_2",     0x52);
+        opcode_list.insert("OP_NOP",   0x61);
         opcode_list.insert("OP_DUP",   0x76);
+        opcode_list.insert("OP_IF",    0x63);
+        opcode_list.insert("OP_NOTIF", 0x64);
+        opcode_list.insert("OP_ELSE",  0x67);
+        opcode_list.insert("OP_ENDIF", 0x68);
 
         let mut opcode_alias_list: BiMap<&'static str, &'static str> = BiMap::new();
         opcode_alias_list.insert("OP_FALSE", "OP_0");
@@ -25,24 +30,23 @@ impl Compiler {
             opcode_alias_list: opcode_alias_list,
         };
     }
+    fn compile_single(&self, code: &str) -> i32 {
+        let mut codes_unalias: &str = "";
+        let alias_opcode: &str = match self.opcode_alias_list.get_by_left(&code) {
+            Some(&value) => value,
+            None => code,
+        };
+        let hex: i32 = match self.opcode_list.get_by_left(&alias_opcode) {
+            Some(&value) => value,
+            None => panic!("[Compiler] opcode not found."),
+        };
+        return hex;
+    }
     fn compile(&self, codes: Vec<&str>) -> Vec<i32> {
-        let mut codes_unalias: Vec<&str> = vec![];
-
-        for code in codes {
-            let alias_opcode: &str = match self.opcode_alias_list.get_by_left(&code) {
-                Some(&value) => value,
-                None => code,
-            };
-            codes_unalias.push(alias_opcode);
-        }
-
         let mut bytecode: Vec<i32> = vec![];
 
-        for code in codes_unalias {
-            let hex: i32 = match self.opcode_list.get_by_left(&code) {
-                Some(&value) => value,
-                None => panic!("[Compiler] opcode not found."),
-            };
+        for code in codes {
+            let hex = self.compile_single(code);
             bytecode.push(hex);
         }
 
@@ -84,12 +88,14 @@ impl VM {
         }
     }
     fn step(&mut self) {
-        match self.code[self.pc] {
-            0x01 => self.op_pushnumber(1),
-            0x02 => self.op_pushnumber(2),
-            0x76 => self.op_dup(),
-            _ => panic!("The opcode is not implemented yet,"),
-        }
+        let compiler = Compiler::new();
+        if      self.code[self.pc] == compiler.compile_single("OP_0")   { self.op_pushnumber(0); }
+        else if self.code[self.pc] == compiler.compile_single("OP_1")   { self.op_pushnumber(1); }
+        else if self.code[self.pc] == compiler.compile_single("OP_2")   { self.op_pushnumber(2); }
+        else if self.code[self.pc] == compiler.compile_single("OP_NOP") { self.op_nop(); }
+        else if self.code[self.pc] == compiler.compile_single("OP_DUP") { self.op_dup(); }
+        else if self.code[self.pc] == compiler.compile_single("OP_IF")  { self.op_if(); }
+        else { panic!("The opcode is not implemented yet,"); }
     }
     fn op_pushnumber(&mut self, num: i32){
         self.stack.push(num);
@@ -105,6 +111,12 @@ impl VM {
         self.stack.push(num);
         self.stack.push(num);
         self.pc += 1;
+    }
+    fn op_nop(&mut self){
+        self.pc += 1;
+    }
+    fn op_if(&mut self){
+        let expression = self.code[self.pc + 1];
     }
 }
 
