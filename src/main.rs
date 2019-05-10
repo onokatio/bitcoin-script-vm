@@ -116,14 +116,30 @@ impl VM {
         self.pc += 1;
     }
     fn op_if(&mut self){
-        let expression = self.code[self.pc + 1];
+        let expression = self.codes[self.pc - 1];
+
+        let after_if = self.codes.split_at(self.pc + 1).1;
+        let if_to_endif = after_if.split(|code| *code == Compiler::new().compile_single("OP_ENDIF")).next().unwrap();
+
+        for code in after_if {
+            print!("{:#x} ",code);
+        }
+        println!("");
+        for code in if_to_endif {
+            print!("{:#x} ",code);
+        }
+        println!("");
+        //let true_vm = VM::new(bytecode);
+        //let false_vm = VM::new(bytecode);
+        self.pc += 1;
+        panic!("debug");
     }
 }
 
 fn main() {
 
     let compiler = Compiler::new();
-    let bytecode = compiler.compile(vec!["OP_1", "OP_2", "OP_DUP"]);
+    let bytecode = compiler.compile(vec!["OP_1", "OP_2", "OP_DUP", "OP_IF", "OP_1", "OP_2", "OP_ENDIF", "OP_1"]);
 
     let mut vm = VM::new(bytecode);
     vm.run();
