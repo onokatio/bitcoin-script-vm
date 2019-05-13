@@ -14,6 +14,7 @@ impl Compiler {
         opcode_list.insert("OP_0",     0x00);
         opcode_list.insert("OP_1",     0x51);
         opcode_list.insert("OP_2",     0x52);
+        opcode_list.insert("OP_3",     0x53);
         opcode_list.insert("OP_NOP",   0x61);
         opcode_list.insert("OP_DUP",   0x76);
         opcode_list.insert("OP_IF",    0x63);
@@ -31,7 +32,6 @@ impl Compiler {
         };
     }
     fn compile_single(&self, code: &str) -> i32 {
-        let mut codes_unalias: &str = "";
         let alias_opcode: &str = match self.opcode_alias_list.get_by_left(&code) {
             Some(&value) => value,
             None => code,
@@ -51,6 +51,23 @@ impl Compiler {
         }
 
         return bytecode;
+    }
+    fn uncompile_single(&self, hex: i32) -> &str {
+        let code: &str = match self.opcode_list.get_by_right(&hex) {
+            Some(&value) => value,
+            None => panic!("[Compiler] opcode not found."),
+        };
+        return code;
+    }
+    fn uncompile(&self, hexs: Vec<i32>) -> Vec<&str> {
+        let mut codes: Vec<&str> = vec![];
+
+        for hex in hexs {
+            let code = self.uncompile_single(hex);
+            codes.push(code);
+        }
+
+        return codes;
     }
 
 }
@@ -77,8 +94,8 @@ impl VM {
         println!("]");
 
         print!("codes: [");
-        for code in self.codes {
-            print!("{:#x}, ",code);
+        for code in Compiler::new().uncompile(self.codes) {
+            print!("{}, ",code);
         }
         println!("]");
     }
