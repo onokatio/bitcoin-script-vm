@@ -52,18 +52,18 @@ impl Compiler {
 
         return bytecode;
     }
-    fn uncompile_single(&self, hex: i32) -> &str {
+    fn uncompile_single(&self, hex: &i32) -> &str {
         let code: &str = match self.opcode_list.get_by_right(&hex) {
             Some(&value) => value,
             None => panic!("[Compiler] opcode not found."),
         };
         return code;
     }
-    fn uncompile(&self, hexs: Vec<i32>) -> Vec<&str> {
+    fn uncompile(&self, hexs: &Vec<i32>) -> Vec<&str> {
         let mut codes: Vec<&str> = vec![];
 
         for hex in hexs {
-            let code = self.uncompile_single(hex);
+            let code = self.uncompile_single(&hex);
             codes.push(code);
         }
 
@@ -71,30 +71,30 @@ impl Compiler {
     }
 
 }
-struct VM {
+struct VM<'borrow_code_lifetime> {
     stack: Vec<i32>,
-    codes: Vec<i32>,
+    codes: &'borrow_code_lifetime Vec<i32>,
     pc: usize,
 }
 
-impl VM {
-    fn new(codes: Vec<i32>) -> VM {
+impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
+    fn new(codes: &'borrow_code_lifetime Vec<i32>) -> VM<'borrow_code_lifetime> {
         VM {
             codes: codes,
             pc: 0,
             stack: vec![]
         }
     }
-    fn dump(self) {
+    fn dump(&self) {
         println!("pc:{}", self.pc);
         print!("stack: [");
-        for value in self.stack {
+        for value in &self.stack {
             print!("{:#x}, ",value);
         }
         println!("]");
 
         print!("codes: [");
-        for code in Compiler::new().uncompile(self.codes) {
+        for code in Compiler::new().uncompile(&self.codes) {
             print!("{}, ",code);
         }
         println!("]");
@@ -133,22 +133,21 @@ impl VM {
         self.pc += 1;
     }
     fn op_if(&mut self){
-        let expression = self.codes[self.pc - 1];
+        //let  = self.codes[self.pc - 2];
 
         let after_if = self.codes.split_at(self.pc + 1).1;
-        let if_to_endif = after_if.split(|code| *code == Compiler::new().compile_single("OP_ENDIF")).next().unwrap();
+        let if_to_endif = after_if.rsplitn(2, |code| *code == Compiler::new().compile_single("OP_ENDIF"));
 
-        for code in after_if {
-            print!("{:#x} ",code);
+        println!("");
+        for code in if_to_endif.last().unwrap() {
+            print!("{} ",Compiler::new().uncompile_single(&code));
         }
         println!("");
-        for code in if_to_endif {
-            print!("{:#x} ",code);
-        }
-        println!("");
+
         //let true_vm = VM::new(bytecode);
         //let false_vm = VM::new(bytecode);
         self.pc += 1;
+
         panic!("debug");
     }
 }
@@ -156,9 +155,10 @@ impl VM {
 fn main() {
 
     let compiler = Compiler::new();
-    let bytecode = compiler.compile(vec!["OP_1", "OP_2", "OP_DUP", "OP_IF", "OP_1", "OP_2", "OP_ENDIF", "OP_1"]);
+    let bytecode = compiler.compile(vec!["OP_IF", "OP_1", "OP_IF","OP_2","OP_ENDIF", "OP_3", "OP_ENDIF", "OP_1"]);
 
-    let mut vm = VM::new(bytecode);
+    let mut vm = VM::new(&bytecode);
+    vm.dump();
     vm.run();
 
     vm.dump();
