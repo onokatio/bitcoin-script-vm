@@ -136,16 +136,12 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
         //let  = self.codes[self.pc - 2];
 
         let after_if = self.codes.split_at(self.pc + 1).1;
-        let if_to_endif = after_if.rsplitn(2, |code| *code == Compiler::new().compile_single("OP_ENDIF"));
+        let codes_in_if_to_endif = after_if.rsplitn(2, |code| *code == Compiler::new().compile_single("OP_ENDIF"));
 
-        println!("");
-        for code in if_to_endif.last().unwrap() {
-            print!("{} ",Compiler::new().uncompile_single(&code));
-        }
-        println!("");
+        //codes_in_if_to_endif.last().unwrap()
 
-        //let true_vm = VM::new(bytecode);
-        //let false_vm = VM::new(bytecode);
+        //let if_vm = VM::new(bytecode);
+        //let else_vm = VM::new(bytecode);
         self.pc += 1;
 
         panic!("debug");
