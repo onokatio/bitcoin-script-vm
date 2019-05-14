@@ -114,6 +114,17 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
         else if self.codes[self.pc] == compiler.compile_single("OP_IF")  { self.op_if(); }
         else { panic!("[VM] The opcode is not implemented yet,"); }
     }
+    fn get_ifblock_vec(codes: Vec<i32>) -> Vec<Vec<i32>>{
+        let compiler = Compiler::new();
+        match codes.binary_search(&compiler.compile_single("OP_IF")){
+            Ok(value) => {
+                let after_if = codes.split_at(value + 1).1;
+                let codes_in_if_to_endif = after_if.rsplitn(2, |code| *code == compiler.compile_single("OP_ENDIF"));
+                codes_in_if_to_endif
+            },
+            Err(value) => value,
+        }
+    }
     fn op_pushnumber(&mut self, num: i32){
         self.stack.push(num);
         self.pc += 1;
@@ -135,8 +146,6 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
     fn op_if(&mut self){
         //let  = self.codes[self.pc - 2];
 
-        let after_if = self.codes.split_at(self.pc + 1).1;
-        let codes_in_if_to_endif = after_if.rsplitn(2, |code| *code == Compiler::new().compile_single("OP_ENDIF"));
 
         //codes_in_if_to_endif.last().unwrap()
 
