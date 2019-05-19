@@ -91,11 +91,11 @@ struct VM<'borrow_code_lifetime> {
 }
 
 impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
-    fn new(codes: &'borrow_code_lifetime Vec<i32>, stack: &'borrow_code_lifetime mut Vec<i32>) -> VM<'borrow_code_lifetime>{
+    fn new(codes: &'borrow_code_lifetime Vec<i32>, stack: &'borrow_code_lifetime mut Vec<i32>, pc: usize) -> VM<'borrow_code_lifetime>{
         VM {
             codes: codes,
-            pc: 0,
-            stack: stack
+            stack: stack,
+            pc: pc,
         }
     }
     fn dump(&self) {
@@ -114,18 +114,25 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
     }
     fn run(&mut self) {
         while self.codes.len() > self.pc {
-            self.step();
+            let halt = self.step();
+            if halt == 1 {
+                break;
+            }
         }
     }
-    fn step(&mut self) {
+    fn step(&mut self) -> i32{
         let compiler = Compiler::new();
-        if      self.codes[self.pc] == compiler.compile_single("OP_0")   { self.op_pushnumber(0); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_1")   { self.op_pushnumber(1); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_2")   { self.op_pushnumber(2); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_NOP") { self.op_nop(); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_DUP") { self.op_dup(); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_IF")  { self.op_if(); }
+        if      self.codes[self.pc] == compiler.compile_single("OP_0")    { self.op_pushnumber(0); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_1")    { self.op_pushnumber(1); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_2")    { self.op_pushnumber(2); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_NOP")  { self.op_nop(); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_DUP")  { self.op_dup(); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_IF")   { self.op_if(); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_ENDIF"){ return 1; }
+        else if self.codes[self.pc] == compiler.compile_single("OP_ELSE"){ return 1; }
         else { panic!("[VM] The opcode is not implemented yet,"); }
+
+        return 0;
     }
     fn op_pushnumber(&mut self, num: i32){
         self.stack.push(num);
@@ -146,57 +153,33 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
         self.pc += 1;
     }
     fn op_if(&mut self){
+
+        self.pc += 1;
+
+        let bool = self.stack.pop();
+        if bool.unwrap() == 0 { // run from OP_ELSE to OP_END
+
+            let mut if_vm = VM::new(self.codes, self.stack, self.pc);
+            if_vm.run();
+
+            if self.codes[self.pc] == Compiler::new().compile_single("OP_ELSE") {
+                if_vm.run_nothing(); // skip from OP_ELSE to OP_ENDIF
+            }
+
+        } else { // run from OP_IF to OP_ELSE
+
+            let mut if_vm = VM::new(self.codes, self.stack, self.pc);
+            if_vm.run();
+
+            if self.codes[self.pc] == Compiler::new().compile_single("OP_ELSE") {
+                let mut if_vm = VM::new(self.codes, self.stack, self.pc);
+                if_vm.run_nothing(); // skip from OP_IF to OP_ELSE
+            }
+        }
+
         //let  = self.codes[self.pc - 2];
         let mut if_code: Vec<i32> = vec![];
         let mut else_code: Vec<i32> = vec![];
-
-        // TODO: replace rspritn to count loop like OP_ELSE
-        let after_if = self.codes.split_at(self.pc + 1).1;
-        let codes_in_if_to_endif = after_if.rsplitn(2, |code| *code == Compiler::new().compile_single("OP_ENDIF")).last().unwrap();
-
-        {
-            let mut count_op_if = 0;
-            let mut count_op_endif = 0;
-            let mut codes_in_if_to_endif = codes_in_if_to_endif.iter();
-            loop {
-                let code = codes_in_if_to_endif.next().unwrap();
-                if *code == Compiler::new().compile_single("OP_IF") {
-                    count_op_if+=1;
-                } else if *code == Compiler::new().compile_single("OP_ENDIF") {
-                    count_op_endif+=1;
-                } else if *code == Compiler::new().compile_single("OP_ELSE") {
-                    if count_op_if == count_op_endif {
-                        break;
-                    }
-                }
-                if_code.push(*code);
-            }
-            for code in codes_in_if_to_endif {
-                else_code.push(*code);
-            }
-        }
-
-        print!("if_code: [");
-        for code in &if_code {
-            print!("{} ", Compiler::new().uncompile_single(&code));
-        }
-        println!("]");
-        print!("else_code: [");
-        for code in &else_code {
-            print!("{} ", Compiler::new().uncompile_single(&code));
-        }
-        println!("]");
-
-        {
-            let mut if_vm = VM::new(&if_code, self.stack);
-            if_vm.run();
-        }
-
-        {
-            let mut else_vm = VM::new(&else_code, self.stack);
-            else_vm.run();
-        }
-        self.pc += 1;
 
         panic!("debug");
     }
@@ -208,7 +191,7 @@ fn main() {
     let bytecode = compiler.compile(vec!["OP_IF", "OP_1", "OP_IF","OP_2", "OP_ELSE", "OP_1", "OP_ENDIF", "OP_ELSE", "OP_3", "OP_ENDIF", "OP_1"]);
 
     let mut stack: Vec<i32> = vec![];
-    let mut vm = VM::new(&bytecode, &mut stack);
+    let mut vm = VM::new(&bytecode, &mut stack,0);
     vm.dump();
     vm.run();
 
