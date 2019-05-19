@@ -15,6 +15,19 @@ impl Compiler {
         opcode_list.insert("OP_1",     0x51);
         opcode_list.insert("OP_2",     0x52);
         opcode_list.insert("OP_3",     0x53);
+        opcode_list.insert("OP_4",     0x54);
+        opcode_list.insert("OP_5",     0x55);
+        opcode_list.insert("OP_6",     0x56);
+        opcode_list.insert("OP_7",     0x57);
+        opcode_list.insert("OP_8",     0x58);
+        opcode_list.insert("OP_9",     0x59);
+        opcode_list.insert("OP_10",    0x5a);
+        opcode_list.insert("OP_11",    0x5b);
+        opcode_list.insert("OP_12",    0x5c);
+        opcode_list.insert("OP_13",    0x5d);
+        opcode_list.insert("OP_14",    0x5e);
+        opcode_list.insert("OP_15",    0x5f);
+        opcode_list.insert("OP_16",    0x60);
         opcode_list.insert("OP_NOP",   0x61);
         opcode_list.insert("OP_DUP",   0x76);
         opcode_list.insert("OP_IF",    0x63);
@@ -137,6 +150,7 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
         let mut if_code: Vec<i32> = vec![];
         let mut else_code: Vec<i32> = vec![];
 
+        // TODO: replace rspritn to count loop like OP_ELSE
         let after_if = self.codes.split_at(self.pc + 1).1;
         let codes_in_if_to_endif = after_if.rsplitn(2, |code| *code == Compiler::new().compile_single("OP_ENDIF")).last().unwrap();
 
