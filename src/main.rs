@@ -11,29 +11,30 @@ struct Compiler {
 impl Compiler {
     fn new() -> Compiler {
         let mut opcode_list: BiMap<&'static str, i32> = BiMap::new();
-        opcode_list.insert("OP_0",     0x00);
-        opcode_list.insert("OP_1",     0x51);
-        opcode_list.insert("OP_2",     0x52);
-        opcode_list.insert("OP_3",     0x53);
-        opcode_list.insert("OP_4",     0x54);
-        opcode_list.insert("OP_5",     0x55);
-        opcode_list.insert("OP_6",     0x56);
-        opcode_list.insert("OP_7",     0x57);
-        opcode_list.insert("OP_8",     0x58);
-        opcode_list.insert("OP_9",     0x59);
-        opcode_list.insert("OP_10",    0x5a);
-        opcode_list.insert("OP_11",    0x5b);
-        opcode_list.insert("OP_12",    0x5c);
-        opcode_list.insert("OP_13",    0x5d);
-        opcode_list.insert("OP_14",    0x5e);
-        opcode_list.insert("OP_15",    0x5f);
-        opcode_list.insert("OP_16",    0x60);
-        opcode_list.insert("OP_NOP",   0x61);
-        opcode_list.insert("OP_DUP",   0x76);
-        opcode_list.insert("OP_IF",    0x63);
-        opcode_list.insert("OP_NOTIF", 0x64);
-        opcode_list.insert("OP_ELSE",  0x67);
-        opcode_list.insert("OP_ENDIF", 0x68);
+        opcode_list.insert("OP_0",       0x00);
+        opcode_list.insert("OP_1NEGATE", 0x4f);
+        opcode_list.insert("OP_1",       0x51);
+        opcode_list.insert("OP_2",       0x52);
+        opcode_list.insert("OP_3",       0x53);
+        opcode_list.insert("OP_4",       0x54);
+        opcode_list.insert("OP_5",       0x55);
+        opcode_list.insert("OP_6",       0x56);
+        opcode_list.insert("OP_7",       0x57);
+        opcode_list.insert("OP_8",       0x58);
+        opcode_list.insert("OP_9",       0x59);
+        opcode_list.insert("OP_10",      0x5a);
+        opcode_list.insert("OP_11",      0x5b);
+        opcode_list.insert("OP_12",      0x5c);
+        opcode_list.insert("OP_13",      0x5d);
+        opcode_list.insert("OP_14",      0x5e);
+        opcode_list.insert("OP_15",      0x5f);
+        opcode_list.insert("OP_16",      0x60);
+        opcode_list.insert("OP_NOP",     0x61);
+        opcode_list.insert("OP_DUP",     0x76);
+        opcode_list.insert("OP_IF",      0x63);
+        opcode_list.insert("OP_NOTIF",   0x64);
+        opcode_list.insert("OP_ELSE",    0x67);
+        opcode_list.insert("OP_ENDIF",   0x68);
 
         let mut opcode_alias_list: BiMap<&'static str, &'static str> = BiMap::new();
         opcode_alias_list.insert("OP_FALSE", "OP_0");
@@ -124,28 +125,29 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
     fn step(&mut self) -> i32{
 
         let compiler = Compiler::new();
-        if      self.codes[self.pc] == compiler.compile_single("OP_0")    { self.op_pushnumber(0); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_1")    { self.op_pushnumber(1); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_2")    { self.op_pushnumber(2); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_3")    { self.op_pushnumber(3); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_4")    { self.op_pushnumber(4); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_5")    { self.op_pushnumber(5); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_6")    { self.op_pushnumber(6); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_7")    { self.op_pushnumber(7); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_8")    { self.op_pushnumber(8); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_9")    { self.op_pushnumber(9); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_10")    { self.op_pushnumber(10); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_11")    { self.op_pushnumber(11); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_12")    { self.op_pushnumber(12); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_13")    { self.op_pushnumber(13); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_14")    { self.op_pushnumber(14); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_15")    { self.op_pushnumber(15); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_16")    { self.op_pushnumber(16); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_NOP")  { self.op_nop(); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_DUP")  { self.op_dup(); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_IF")   { self.op_if(); }
-        else if self.codes[self.pc] == compiler.compile_single("OP_ENDIF"){ return 1; }
-        else if self.codes[self.pc] == compiler.compile_single("OP_ELSE"){ return 1; }
+        if      self.codes[self.pc] == compiler.compile_single("OP_0")       { self.op_pushnumber(0); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_1NEGATE") { self.op_pushnumber(-1); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_1")       { self.op_pushnumber(1); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_2")       { self.op_pushnumber(2); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_3")       { self.op_pushnumber(3); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_4")       { self.op_pushnumber(4); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_5")       { self.op_pushnumber(5); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_6")       { self.op_pushnumber(6); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_7")       { self.op_pushnumber(7); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_8")       { self.op_pushnumber(8); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_9")       { self.op_pushnumber(9); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_10")      { self.op_pushnumber(10); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_11")      { self.op_pushnumber(11); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_12")      { self.op_pushnumber(12); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_13")      { self.op_pushnumber(13); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_14")      { self.op_pushnumber(14); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_15")      { self.op_pushnumber(15); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_16")      { self.op_pushnumber(16); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_NOP")     { self.op_nop(); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_DUP")     { self.op_dup(); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_IF")      { self.op_if(); }
+        else if self.codes[self.pc] == compiler.compile_single("OP_ENDIF")   { return 1; }
+        else if self.codes[self.pc] == compiler.compile_single("OP_ELSE")    { return 1; }
         else { panic!("[VM] The opcode {:#x} is not implemented yet,", self.codes[self.pc]); }
 
         return 0;
@@ -226,12 +228,11 @@ fn main() {
                                     "OP_ELSE",
                                         "OP_4",
                                     "OP_ENDIF",
-                                    "OP_5"]);
+                                    "OP_1NEGATE"]);
 
     let mut stack: Vec<i32> = vec![];
     let mut vm = VM::new(&bytecode, &mut stack,0);
     vm.dump();
     vm.run();
 
-    //vm.dump();
 }
