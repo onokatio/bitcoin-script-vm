@@ -103,7 +103,7 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
         println!("pc:{}", self.pc);
         print!("stack: [");
         for value in &mut self.stack.iter() {
-            print!("{:#x}, ", value);
+            print!("{:#x}({}), ", value,value);
         }
         println!("]");
 
