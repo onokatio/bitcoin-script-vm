@@ -1,7 +1,14 @@
 extern crate bimap;
+extern crate sha2;
+extern crate ripemd160;
+extern crate digest;
 
 //use std::io;
+use std::mem;
 use bimap::BiMap;
+use digest::Digest;
+use sha2::Sha256;
+use ripemd160::Ripemd160;
 
 struct Compiler {
     opcode_list: BiMap<&'static str, i32>,
@@ -35,6 +42,7 @@ impl Compiler {
         opcode_list.insert("OP_NOTIF",   0x64);
         opcode_list.insert("OP_ELSE",    0x67);
         opcode_list.insert("OP_ENDIF",   0x68);
+        opcode_list.insert("OP_HASH160", 0xa9);
 
         let mut opcode_alias_list: BiMap<&'static str, &'static str> = BiMap::new();
         opcode_alias_list.insert("OP_FALSE", "OP_0");
@@ -148,6 +156,7 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
         else if self.codes[self.pc] == compiler.compile_single("OP_IF")      { self.op_if(); }
         else if self.codes[self.pc] == compiler.compile_single("OP_ENDIF")   { return 1; }
         else if self.codes[self.pc] == compiler.compile_single("OP_ELSE")    { return 1; }
+        else if self.codes[self.pc] == compiler.compile_single("OP_HASH160") { self.op_hash160(); }
         else { panic!("[VM] The opcode {:#x} is not implemented yet,", self.codes[self.pc]); }
 
         return 0;
@@ -210,6 +219,17 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
         }
 
         //panic!("debug");
+    }
+    fn op_hash160(&mut self){
+
+        let value = self.stack.pop().unwrap();
+
+        let sha256hash = Sha256::digest(&value.to_be_bytes());
+        let ripemd160hash = Ripemd160::digest(sha256hash.as_slice()).as_ref();
+
+        let value = mem::transmute::<[u8; 12], i32>(ripemd160hash);
+
+        self.stack.push(ripemd160hash.as_ref());
     }
 }
 
