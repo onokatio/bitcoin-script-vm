@@ -1,14 +1,14 @@
 extern crate bimap;
-extern crate sha2;
-extern crate ripemd160;
-extern crate digest;
+//extern crate sha2;
+//extern crate ripemd160;
+//extern crate digest;
 
 //use std::io;
-use std::mem;
+//use std::mem;
 use bimap::BiMap;
-use digest::Digest;
-use sha2::Sha256;
-use ripemd160::Ripemd160;
+//use digest::Digest;
+//use sha2::Sha256;
+//use ripemd160::Ripemd160;
 
 struct Compiler {
     opcode_list: BiMap<&'static str, i32>,
@@ -222,14 +222,13 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
     }
     fn op_hash160(&mut self){
 
-        let value = self.stack.pop().unwrap();
+        //let value = self.stack.pop().unwrap();
 
-        let sha256hash = Sha256::digest(&value.to_be_bytes());
-        let ripemd160hash = Ripemd160::digest(sha256hash.as_slice()).as_ref();
+        //let sha256hash = Sha256::digest(&value.to_be_bytes());
+        //let ripemd160hash = Ripemd160::digest(sha256hash.as_slice());
 
-        let value = mem::transmute::<[u8; 12], i32>(ripemd160hash);
 
-        self.stack.push(ripemd160hash.as_ref());
+        //self.stack.push(ripemd160hash.as_slice());
     }
 }
 
