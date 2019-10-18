@@ -1,4 +1,6 @@
 # Constants
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fonokatio%2Fbitcoin-script-vm.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fonokatio%2Fbitcoin-script-vm?ref=badge_shield)
+
 - [x] OP_FALSE OP_0
 - [ ] push bytes
 - [ ] OP_PUSHDATA1
@@ -81,3 +83,7 @@
 - [ ] OP_PUBKEYHASH
 - [ ] OP_PUBKEY
 - [ ] OP_INVALIDOPCODE
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fonokatio%2Fbitcoin-script-vm.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fonokatio%2Fbitcoin-script-vm?ref=badge_large)
