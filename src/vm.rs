@@ -139,7 +139,7 @@ impl<'borrow_code_lifetime> VM<'borrow_code_lifetime> {
     }
     pub fn op_hash160(&mut self){
 
-        //let value = self.stack.pop().unwrap();
+        let value = self.stack.pop().unwrap();
 
         //let sha256hash = Sha256::digest(&value.to_be_bytes());
         //let ripemd160hash = Ripemd160::digest(sha256hash.as_slice());
